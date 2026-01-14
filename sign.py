@@ -239,17 +239,15 @@ def process_frame(sid, data):
         results = holistic.process(image_rgb)
         
         # Get prediction
-            
-            # Get prediction
-            sign, confidence = SignLanguageRecognizer.predict_sign(results)
-            
-            if sign:
-                # Emit prediction back to client
-                sio.emit('sign_prediction', {
-                    'word': sign,
-                    'confidence': float(confidence),
-                    'timestamp': data.get('timestamp', 0)
-                }, room=sid)
+        sign, confidence = SignLanguageRecognizer.predict_sign(results)
+        
+        if sign:
+            # Emit prediction back to client
+            sio.emit('sign_prediction', {
+                'word': sign,
+                'confidence': float(confidence),
+                'timestamp': data.get('timestamp', 0)
+            }, room=sid)
             
     except Exception as e:
         print(f"⚠️ Frame processing error: {e}")
