@@ -18,11 +18,21 @@ from PIL import Image
 import math
 
 # Socket.IO server
-sio = socketio.Server(cors_allowed_origins='*', async_mode='eventlet')
+sio = socketio.Server(
+    cors_allowed_origins='*', 
+    async_mode='eventlet',
+    ping_timeout=60,
+    ping_interval=25
+)
 app = socketio.WSGIApp(sio)
 
 # MediaPipe setup
 mp_holistic = mp.solutions.holistic
+holistic = mp_holistic.Holistic(
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5,
+    static_image_mode=False  # Better for processing stream
+)
 
 print("🚀 Sign Language Recognition Service Started")
 print("📡 Waiting for connections on port 7001...")
@@ -223,16 +233,12 @@ def process_frame(sid, data):
         image = Image.open(BytesIO(image_data))
         frame = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
         
-        # Create new Holistic instance for each frame to avoid timestamp issues
-        with mp_holistic.Holistic(
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5,
-            static_image_mode=True  # Process each frame independently
-        ) as holistic:
-            # Process with MediaPipe
-            image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            image_rgb.flags.writeable = False
-            results = holistic.process(image_rgb)
+        # Process with MediaPipe
+        image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        image_rgb.flags.writeable = False
+        results = holistic.process(image_rgb)
+        
+        # Get prediction
             
             # Get prediction
             sign, confidence = SignLanguageRecognizer.predict_sign(results)
