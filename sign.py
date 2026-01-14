@@ -1,3 +1,6 @@
+import eventlet
+eventlet.monkey_patch()
+
 """
 Word-Level Sign Language Recognition - Headless Backend Service
 Receives video frames from frontend and returns sign predictions
@@ -15,7 +18,7 @@ from PIL import Image
 import math
 
 # Socket.IO server
-sio = socketio.Server(cors_allowed_origins='*', async_mode='threading')
+sio = socketio.Server(cors_allowed_origins='*', async_mode='eventlet')
 app = socketio.WSGIApp(sio)
 
 # MediaPipe setup
